@@ -1,2 +1,0 @@
-# DOBOT MG400 resources
-See [https://www.dropbox.com/s/ybdutm25pdug91x/MagicianPro_Controller_1.5.6.0.tar.gz?dl=0&file_subpath=%2Fuserdata%2Fproject%2Fproperties](https://www.dropbox.com/s/ybdutm25pdug91x/MagicianPro_Controller_1.5.6.0.tar.gz?dl=0&file_subpath=%2Fuserdata%2Fproject%2Fproperties)
