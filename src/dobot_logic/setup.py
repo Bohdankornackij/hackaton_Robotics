@@ -22,8 +22,9 @@ setup(
             'pytest',
         ],
     },
-    entry_points={
+   entry_points={
         'console_scripts': [
+            'main = dobot_logic.main:main',
         ],
     },
 )
