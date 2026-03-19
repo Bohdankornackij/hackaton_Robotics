@@ -82,13 +82,9 @@ class DobotTaskController(Node):
 
     def execute_task(self):
         now = self.get_clock().now().nanoseconds / 1e9  #поточний час в секундах
-
-        if self.move_start_time is None:  #перший запуск - ініціалізуємо таймер
-            self.move_start_time = now
-            self.moving = True
-
+        
         if self.moving:
-            if now - self.move_start_time < 3.5:  #чекаємо 3.5 секунди
+            if self.move_start_time is None or now - self.move_start_time < 3.5:  #чекаємо 3.5 секунди
                 return
             self.moving = False  #рух завершено
 
