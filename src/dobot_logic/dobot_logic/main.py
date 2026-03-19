@@ -1,6 +1,6 @@
-import rclpy
-from rclpy.node import Node
-from visualization_msgs.msg import Marker, MarkerArray
+import rclpy # type: ignore
+from rclpy.node import Node # type: ignore
+from visualization_msgs.msg import Marker, MarkerArray # type: ignore
 
 class DobotTaskController(Node):
     def __init__(self):
@@ -45,9 +45,9 @@ class DobotTaskController(Node):
             return marker
         
         #створення кубів з різними позиціями та кольорами
-        msg.markers.append(create_cube(0, 0.3,  0.0,  0.025, 1, 0, 0)) # Червоний
-        msg.markers.append(create_cube(1, 0.0,  0.25, 0.025, 0, 1, 0)) # Зелений
-        msg.markers.append(create_cube(2, 0.25, 0.25, 0.025, 0, 0, 1)) # Синій 
+        msg.markers.append(create_cube(0, 0.3, 0.0, 0.025, 1, 0, 0)) # Червоний
+        msg.markers.append(create_cube(1, 0.0, 0.25, 0.025, 0, 1, 0)) # Зелений
+        msg.markers.append(create_cube(2, -0.25, -0.25, 0.025, 0, 0, 1)) # Синій 
         self.marker_pub.publish(msg)  #публікація масиву маркерів
         
 def main(args=None):
