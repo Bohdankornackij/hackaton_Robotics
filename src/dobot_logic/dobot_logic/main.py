@@ -1,9 +1,6 @@
-import rclpy
-from rclpy.node import Node
-from sensor_msgs.msg import JointState
-from visualization_msgs.msg import Marker, MarkerArray
-import math
-import time
+import rclpy # type: ignore
+from rclpy.node import Node # type: ignore
+from visualization_msgs.msg import Marker, MarkerArray # type: ignore
 
 
 
