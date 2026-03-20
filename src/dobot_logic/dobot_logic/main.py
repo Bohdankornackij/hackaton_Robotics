@@ -18,9 +18,8 @@ class DobotTaskController(Node):
 
         self.get_logger().info('Running in Simulation Mode')  #очікування доступності сервісу PTP
 
-        self.timer_rviz = self.create_timer(0.1, self.update_rviz) #створення таймера для виклику функції publish_scene кожну секунду
+        self.timer_rviz = self.create_timer(0.00001, self.update_rviz) #створення таймера для виклику функції publish_scene кожну секунду
 
-        self.timer_logic = self.create_timer(4.0, self.execute_task)  #створення таймера для виклику функції execute_task кожні 4 секунди
         self.step = 0
 
         self.moving = False  #прапорець що робот рухається
@@ -32,8 +31,52 @@ class DobotTaskController(Node):
             'mg400_j3_2', 'mg400_j4_1', 'mg400_j4_2', 'mg400_j5'
         ]  #змінна для збереження імен суглобів
 
+        self.target_joints = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self.lerp_speed = 2.0  # радіан/секунда
+        self.arrival_threshold = 0.01  # радіан — точність "досяг цілі"
+        self.pause_duration = 1.5       # секунд паузи після досягнення точки
+        self.pause_start_time = None
+        self.waiting = False
+        self._last_rviz_time = None
+
+        self.execute_task()
+
     def update_rviz(self):
-        #Оновлюємо сцену в RViz та відправляємо поточні позиції суглобів
+        now = self.get_clock().now().nanoseconds / 1e9
+
+        if self._last_rviz_time is None:
+            self._last_rviz_time = now
+
+        dt = now - self._last_rviz_time
+        self._last_rviz_time = now
+        dt = min(dt, 0.005)
+
+        # Інтерполяція поточних суглобів до цільових
+        for i in range(len(self.current_joints)):
+            diff = self.target_joints[i] - self.current_joints[i]
+            step = self.lerp_speed * dt
+            if abs(diff) <= step:
+                self.current_joints[i] = self.target_joints[i]
+            else:
+                self.current_joints[i] += math.copysign(step, diff)
+
+        # Перевірка чи досягнуто ціль
+        arrived = all(
+            abs(self.current_joints[i] - self.target_joints[i]) < self.arrival_threshold
+            for i in range(len(self.current_joints))
+        )
+
+        if self.moving and arrived:
+            self.moving = False
+            self.waiting = True
+            self.pause_start_time = now
+
+        # Пауза після досягнення точки
+        if self.waiting:
+            if now - self.pause_start_time >= self.pause_duration:
+                self.waiting = False
+                self.execute_task()
+
         self.publish_scene()
         self.simulate_move(*self.current_joints)
 
@@ -82,40 +125,29 @@ class DobotTaskController(Node):
         self.joint_pub.publish(msg)  #публікація повідомлення з позиціями суглобів
 
     def execute_task(self):
-        now = self.get_clock().now().nanoseconds / 1e9  #поточний час в секундах
-        
-        if self.moving:
-            if self.move_start_time is None or now - self.move_start_time < 3.5:  #чекаємо 3.5 секунди
-                return
-            self.moving = False  #рух завершено
-
         if self.step == 0:
-            self.current_joints = [0.0000, 1.2973, 1.2973, 0.1382, -1.2973, -1.4355, 1.4355, 0.0]  #виміряні кути для червоного кубика
+            self.target_joints = [0.0000, 1.2973, 1.2973, 0.1382, -1.2973, -1.4355, 1.4355, 0.0]
             self.get_logger().info("Moving to Point 1 (Red Cube)")
             self.step = 1
-            self.moving = True  #починаємо рух
-            self.move_start_time = now  #запам'ятовуємо час початку
-            
+            self.moving = True
+
         elif self.step == 1:
-            self.current_joints = [1.5508, 1.2935, 1.2935, 0.4416, -1.2935, -1.7350, 1.7350, 0.0]  #виміряні кути для зеленого кубика
+            self.target_joints = [1.5508, 1.2935, 1.2935, 0.4416, -1.2935, -1.7350, 1.7350, 0.0]
             self.get_logger().info("Moving to Point 2 (Green Cube)")
             self.step = 2
-            self.moving = True  #починаємо рух
-            self.move_start_time = now  #запам'ятовуємо час початку
-            
+            self.moving = True
+
         elif self.step == 2:
-            self.current_joints = [-2.3457, 1.3683, 1.3683, -0.1824, -1.3683, -1.1860, 1.1860, 0.0]  #виміряні кути для синього кубика
+            self.target_joints = [-2.3457, 1.3683, 1.3683, -0.1824, -1.3683, -1.1860, 1.1860, 0.0]
             self.get_logger().info("Moving to Point 3 (Blue Cube)")
             self.step = 3
-            self.moving = True  #починаємо рух
-            self.move_start_time = now  #запам'ятовуємо час початку
-            
+            self.moving = True
+
         elif self.step == 3:
-            self.current_joints = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]  #повернення в початкову позицію
-            self.get_logger().info("Loop Complete. Waiting 4 seconds and restarting loop")
-            self.step = 0  #повернути на початок циклу
-            self.moving = True  #чекаємо перед рестартом
-            self.move_start_time = now  #запам'ятовуємо час початку
+            self.target_joints = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+            self.get_logger().info("Returning home, restarting loop")
+            self.step = 0
+            self.moving = True
 
         
 def main(args=None):
