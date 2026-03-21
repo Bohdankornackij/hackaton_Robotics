@@ -25,6 +25,7 @@ setup(
    entry_points={
         'console_scripts': [
             'main = dobot_logic.main:main',
+            'bridge = dobot_logic.bridge:main',
         ],
     },
 )

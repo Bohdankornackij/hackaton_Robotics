@@ -24,7 +24,10 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(gazebo_ros_pkg, 'launch', 'gazebo.launch.py')
         ),
-        launch_arguments={'world': world_file}.items()
+        launch_arguments={
+            'world': world_file,
+            'paused': 'true'
+        }.items()
     )
 
     node_robot_state_publisher = Node(
@@ -41,15 +44,23 @@ def generate_launch_description():
         output='screen'
     )
 
-    # ← ЗАТРИМКА 10 секунд
-    delayed_spawn = TimerAction(
-        period=10.0,
-        actions=[spawn_entity]
+    dobot_main = Node(
+        package='dobot_logic',
+        executable='main',
+        output='screen'
     )
+
+    delayed_spawn = TimerAction(period=10.0, actions=[spawn_entity])
+    delayed_main = TimerAction(period=12.0, actions=[dobot_main])
+
+    dobot_bridge = Node(package='dobot_logic', executable='bridge', output='screen')
+    delayed_bridge = TimerAction(period=13.0, actions=[dobot_bridge])
 
     return LaunchDescription([
         set_gazebo_model_path,
         gazebo,
         node_robot_state_publisher,
-        delayed_spawn,  # ← замість spawn_entity
+        delayed_spawn,
+        delayed_main,
+        delayed_bridge,
     ])
