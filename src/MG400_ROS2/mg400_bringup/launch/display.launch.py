@@ -48,12 +48,12 @@ def generate_launch_description():
         launch_arguments=[('workspace_visible', workspace_visible)],
     )
 
-    jsp_node = Node(
-        package='mg400_node',
-        executable='joint_state_publisher_gui',
-        name='joint_state_publisher_gui',
-        on_exit=Shutdown(),
-    )
+    # jsp_node = Node(
+    #     package='mg400_node',
+    #     executable='joint_state_publisher_gui',
+    #     name='joint_state_publisher_gui',
+    #     on_exit=Shutdown(),
+    # )
 
     rviz_node = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -72,6 +72,6 @@ def generate_launch_description():
     ld.add_action(arg_workspace_visible)
     # Add nodes
     ld.add_action(rsp_node)
-    ld.add_action(jsp_node)
+    # ld.add_action(jsp_node)
     ld.add_action(rviz_node)
     return ld
