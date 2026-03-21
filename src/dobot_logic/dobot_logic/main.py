@@ -1,35 +1,39 @@
 import rclpy
+import math 
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from visualization_msgs.msg import Marker, MarkerArray
-import math
-import time
 
 
 class DobotTaskController(Node):
     def __init__(self):
-        #ініціалзація вузла з ім'ям 'dobot_task_controller'
+        # ініціалізація вузла з ім'ям 'dobot_task_controller'
         super().__init__('dobot_task_controller')
 
-        #створення публішера для відправки масиву маркерів на тему '/visualization_marker_array' з розміром черги 10
-        self.marker_pub = self.create_publisher(MarkerArray, '/visualization_marker_array', 10)
+        # створення публішера для відправки масиву маркерів на тему '/visualization_marker_array' з розміром черги 10
+        self.marker_pub = self.create_publisher(
+            MarkerArray, '/visualization_marker_array', 10
+        )
 
-        self.joint_pub = self.create_publisher(JointState, '/joint_states', 10) #створення клієнта для сервісу PTP з ім'ям 'mg400_interface/PTP'
+        # створення публішера для стану суглобів — перекриває joint_state_publisher_gui
+        self.joint_pub = self.create_publisher(JointState, '/joint_states', 10)
 
-        self.get_logger().info('Running in Simulation Mode')  #очікування доступності сервісу PTP
+        # виведення повідомлення про роботу в режимі симуляції
+        self.get_logger().info('Running in Simulation Mode')
 
-        self.timer_rviz = self.create_timer(0.00001, self.update_rviz) #створення таймера для виклику функції publish_scene кожну секунду
+        # створення таймера для виклику функції update_rviz (50 Гц)
+        self.timer_rviz = self.create_timer(0.02, self.update_rviz) 
 
         self.step = 0
 
-        self.moving = False  #прапорець що робот рухається
-        self.move_start_time = None  #час початку руху
+        self.moving = False  # прапорець що робот рухається
+        self.move_start_time = None  # час початку руху
 
-        self.current_joints = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]  #змінна для збереження поточних значень суглобів
+        self.current_joints = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]  # змінна для збереження поточних значень суглобів
         self.joint_names = [
-            'mg400_j1', 'mg400_j2_1', 'mg400_j2_2', 'mg400_j3_1', 
+            'mg400_j1', 'mg400_j2_1', 'mg400_j2_2', 'mg400_j3_1',
             'mg400_j3_2', 'mg400_j4_1', 'mg400_j4_2', 'mg400_j5'
-        ]  #змінна для збереження імен суглобів
+        ]  # змінна для збереження імен суглобів
 
         self.target_joints = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.lerp_speed = 2.0  # радіан/секунда
@@ -49,7 +53,7 @@ class DobotTaskController(Node):
 
         dt = now - self._last_rviz_time
         self._last_rviz_time = now
-        dt = min(dt, 0.005)
+        dt = min(dt, 0.05)
 
         # Інтерполяція поточних суглобів до цільових
         for i in range(len(self.current_joints)):
@@ -72,7 +76,7 @@ class DobotTaskController(Node):
             self.pause_start_time = now
 
         # Пауза після досягнення точки
-        if self.waiting:
+        elif self.waiting:
             if now - self.pause_start_time >= self.pause_duration:
                 self.waiting = False
                 self.execute_task()
@@ -80,49 +84,49 @@ class DobotTaskController(Node):
         self.publish_scene()
         self.simulate_move(*self.current_joints)
 
-    #функція для малювання сцени
+    # функція для малювання сцени
     def publish_scene(self):
-        msg = MarkerArray()  #створення об'єкта типу MarkerArray
+        msg = MarkerArray()  # створення об'єкта типу MarkerArray
 
         def create_cube(id, x, y, z, r, g, b):
-            marker = Marker()  #створення об'єкта типу Marker
-            marker.header.frame_id = "mg400_base_link"  #встановлення ідентифікатора кадру
-            marker.header.stamp = self.get_clock().now().to_msg()  #встановлення часу
+            marker = Marker()  # створення об'єкта типу Marker
+            marker.header.frame_id = "mg400_base_link"  # встановлення ідентифікатора кадру
+            marker.header.stamp = self.get_clock().now().to_msg()  # встановлення часу
 
-            marker.id = id  #встановлення ідентифікатора маркера
-            marker.type = Marker.CUBE  #встановлення типу маркера як куб
-            marker.action = Marker.ADD  #встановлення дії як додавання
+            marker.id = id  # встановлення ідентифікатора маркера
+            marker.type = Marker.CUBE  # встановлення типу маркера як куб
+            marker.action = Marker.ADD  # встановлення дії як додавання
 
-            marker.pose.position.x = x  #встановлення позиції по осі x
-            marker.pose.position.y = y  #встановлення позиції по осі y
-            marker.pose.position.z = z  #встановлення позиції по осі z
+            marker.pose.position.x = x  # встановлення позиції по осі x
+            marker.pose.position.y = y  # встановлення позиції по осі y
+            marker.pose.position.z = z  # встановлення позиції по осі z
 
-            marker.pose.orientation.w = 1.0  #встановлення орієнтації (без повороту)
+            marker.pose.orientation.w = 1.0  # встановлення орієнтації (без повороту)
 
-            marker.scale.x = 0.05  #встановлення масштабу по осі x
-            marker.scale.y = 0.05  #встановлення масштабу по осі y
-            marker.scale.z = 0.05  #встановлення масштабу по осі z
+            marker.scale.x = 0.05  # встановлення масштабу по осі x
+            marker.scale.y = 0.05  # встановлення масштабу по осі y
+            marker.scale.z = 0.05  # встановлення масштабу по осі z
 
-            marker.color.r = float(r)  #встановлення кольору червоного каналу
-            marker.color.g = float(g)  #встановлення кольору зеленого каналу
-            marker.color.b = float(b)  #встановлення кольору синього каналу
-            marker.color.a = 1.0  #встановлення прозорості (1.0 - непрозорий)
+            marker.color.r = float(r)  # встановлення кольору червоного каналу
+            marker.color.g = float(g)  # встановлення кольору зеленого каналу
+            marker.color.b = float(b)  # встановлення кольору синього каналу
+            marker.color.a = 1.0  # встановлення прозорості (1.0 - непрозорий)
 
             return marker
         
-        #створення кубів з різними позиціями та кольорами
+        # створення кубів з різними позиціями та кольорами
         msg.markers.append(create_cube(0, 0.3, 0.0, 0.025, 1, 0, 0)) # Червоний
         msg.markers.append(create_cube(1, 0.0, 0.25, 0.025, 0, 1, 0)) # Зелений
         msg.markers.append(create_cube(2, -0.25, -0.25, 0.025, 0, 0, 1)) # Синій 
-        self.marker_pub.publish(msg)  #публікація масиву маркерів
+        self.marker_pub.publish(msg)  # публікація масиву маркерів
 
 
     def simulate_move(self, *joints):
-        msg = JointState()  #створення об'єкта типу JointState
-        msg.header.stamp = self.get_clock().now().to_msg()  #встановлення часу
-        msg.name = self.joint_names #встановлення імен суглобів
-        msg.position = [float(j) for j in joints]  #встановлення позицій суглобів
-        self.joint_pub.publish(msg)  #публікація повідомлення з позиціями суглобів
+        msg = JointState()  # створення об'єкта типу JointState
+        msg.header.stamp = self.get_clock().now().to_msg()  # встановлення часу
+        msg.name = self.joint_names # встановлення імен суглобів
+        msg.position = [float(j) for j in joints]  # встановлення позицій суглобів
+        self.joint_pub.publish(msg)  # публікація повідомлення з позиціями суглобів
 
     def execute_task(self):
         if self.step == 0:
@@ -149,19 +153,19 @@ class DobotTaskController(Node):
             self.step = 0
             self.moving = True
 
-        
+
 def main(args=None):
-    #ініціалізація ROS 2
+    # ініціалізація ROS 2
     rclpy.init(args=args)
-    node = DobotTaskController()  #створення екземпляра класу DobotTaskController
+    node = DobotTaskController()  # створення екземпляра класу DobotTaskController
 
     try:
-        rclpy.spin(node)  #запуск циклу обробки повідомлень для вузла
+        rclpy.spin(node)  # запуск циклу обробки повідомлень для вузла
     except KeyboardInterrupt:
-        pass  #завершення роботи при отриманні сигналу переривання (Ctrl+C)
+        pass  # завершення роботи при отриманні сигналу переривання (Ctrl+C)
 
-    node.destroy_node()  #знищення вузла
-    rclpy.shutdown()  #завершення роботи ROS 2
+    node.destroy_node()  # знищення вузла
+    rclpy.shutdown()  # завершення роботи ROS 2
 
 if __name__ == '__main__':
-    main()  #виклик функції main для запуску програми
+    main()  # виклик функції main для запуску програми
