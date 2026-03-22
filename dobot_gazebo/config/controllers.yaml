@@ -1,0 +1,33 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 1000
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    mg400_arm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+mg400_arm_controller:
+  ros__parameters:
+    joints:
+      - mg400_j1
+      - mg400_j2_1
+      - mg400_j2_2
+      - mg400_j3_1
+      - mg400_j3_2
+      - mg400_j4_1
+      - mg400_j4_2
+      - mg400_j5
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    gains:
+      mg400_j1:   {p: 100.0, i: 1.0, d: 10.0}
+      mg400_j2_1: {p: 500.0, i: 10.0, d: 20.0}
+      mg400_j2_2: {p: 500.0, i: 10.0, d: 20.0}
+      mg400_j3_1: {p: 500.0, i: 10.0, d: 20.0}
+      mg400_j3_2: {p: 500.0, i: 10.0, d: 20.0}
+      mg400_j4_1: {p: 100.0, i: 1.0, d: 5.0}
+      mg400_j4_2: {p: 100.0, i: 1.0, d: 5.0}
+      mg400_j5:   {p: 50.0, i: 0.1, d: 1.0}

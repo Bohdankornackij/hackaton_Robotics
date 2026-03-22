@@ -20,13 +20,14 @@ def generate_launch_description():
         value=models_path + ':' + os.environ.get('GAZEBO_MODEL_PATH', '')
     )
 
+    # ЗАПУСК ГАЗЕБО (БЕЗ ПАУЗИ!)
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(gazebo_ros_pkg, 'launch', 'gazebo.launch.py')
         ),
         launch_arguments={
             'world': world_file,
-            'paused': 'true'
+            # 'paused': 'true'  <-- ЦЕ МИ ВИДАЛИЛИ
         }.items()
     )
 
@@ -44,23 +45,37 @@ def generate_launch_description():
         output='screen'
     )
 
-    dobot_main = Node(
-        package='dobot_logic',
-        executable='main',
-        output='screen'
+    load_joint_state_broadcaster = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["joint_state_broadcaster"],
+        output="screen",
     )
 
-    delayed_spawn = TimerAction(period=10.0, actions=[spawn_entity])
-    delayed_main = TimerAction(period=12.0, actions=[dobot_main])
+    load_arm_controller = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["mg400_arm_controller"],
+        output="screen",
+    )
 
+    dobot_main = Node(package='dobot_logic', executable='main', output='screen')
     dobot_bridge = Node(package='dobot_logic', executable='bridge', output='screen')
-    delayed_bridge = TimerAction(period=13.0, actions=[dobot_bridge])
+
+    # ТАЙМЕРИ: розтягнуті, щоб комп'ютер не зависав!
+    delayed_spawn = TimerAction(period=10.0, actions=[spawn_entity])
+    delayed_broadcaster = TimerAction(period=15.0, actions=[load_joint_state_broadcaster])
+    delayed_controller = TimerAction(period=18.0, actions=[load_arm_controller])
+    delayed_bridge = TimerAction(period=22.0, actions=[dobot_bridge])
+    delayed_main = TimerAction(period=25.0, actions=[dobot_main])
 
     return LaunchDescription([
         set_gazebo_model_path,
         gazebo,
         node_robot_state_publisher,
         delayed_spawn,
-        delayed_main,
+        delayed_broadcaster,
+        delayed_controller,
         delayed_bridge,
+        delayed_main,
     ])

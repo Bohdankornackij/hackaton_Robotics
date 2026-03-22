@@ -240,6 +240,7 @@ void GazeboRosJointPoseTrajectoryPrivate::SetJointTrajectory(
       reference_link_->GetName().c_str());
   }
 
+  model_ = world_->ModelByName("mg400_robot");
   // copy joint configuration into a map
   auto chain_size = static_cast<unsigned int>(msg->joint_names.size());
   joints_.resize(chain_size);
