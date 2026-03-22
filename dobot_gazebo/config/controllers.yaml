@@ -1,0 +1,35 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100
+    joint_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+joint_trajectory_controller:
+  ros__parameters:
+    joints:
+      - mg400_j1
+      - mg400_j2_1
+      - mg400_j2_2
+      - mg400_j3_1
+      - mg400_j3_2
+      - mg400_j4_1
+      - mg400_j4_2
+      - mg400_j5
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    state_publish_rate: 50.0
+    action_monitor_rate: 20.0
+    allow_partial_joints_goal: false
+    open_loop_control: false
+    gains:
+      mg400_j1: {p: 1000.0, i: 0.0, d: 100.0, i_clamp: 1.0}
+      mg400_j2_1: {p: 5000.0, i: 0.0, d: 500.0, i_clamp: 1.0}
+      mg400_j2_2: {p: 5000.0, i: 0.0, d: 500.0, i_clamp: 1.0}
+      mg400_j3_1: {p: 3000.0, i: 0.0, d: 300.0, i_clamp: 1.0}
+      mg400_j3_2: {p: 3000.0, i: 0.0, d: 300.0, i_clamp: 1.0}
+      mg400_j4_1: {p: 1000.0, i: 0.0, d: 100.0, i_clamp: 1.0}
+      mg400_j4_2: {p: 1000.0, i: 0.0, d: 100.0, i_clamp: 1.0}
+      mg400_j5: {p: 500.0, i: 0.0, d: 50.0, i_clamp: 1.0}
