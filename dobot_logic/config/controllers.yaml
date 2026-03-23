@@ -1,0 +1,23 @@
+﻿controller_manager:
+  ros__parameters:
+    update_rate: 100
+    joint_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+joint_trajectory_controller:
+  ros__parameters:
+    joints:
+      - mg400_j1
+      - mg400_j2_1
+      - mg400_j2_2
+      - mg400_j3_1
+      - mg400_j3_2
+      - mg400_j4_1
+      - mg400_j4_2
+      - mg400_j5
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    open_loop_control: true

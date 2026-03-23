@@ -2,42 +2,43 @@ import rclpy
 from rclpy.node import Node
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from builtin_interfaces.msg import Duration
+from std_msgs.msg import Header
 
 class CubeToucher(Node):
     def __init__(self):
         super().__init__('cube_toucher')
-        # Зміни топік на той, який використовується у твоєму Gazebo (часто це /joint_trajectory_controller/joint_trajectory)
-        self.publisher_ = self.create_publisher(JointTrajectory, '/mg400_controller/joint_trajectory', 10)
-        
-        # Таймер буде викликати рух кожні 4 секунди
-        self.timer = self.create_timer(4.0, self.timer_callback)
+        self.publisher_ = self.create_publisher(JointTrajectory, '/joint_trajectory_controller/joint_trajectory', 10)
+        self.timer = self.create_timer(5.0, self.timer_callback)
         self.step = 0
-        
-        # Орієнтовні кути поворотів суглобів для 3 кубів (в радіанах)
+
+        # Позиції з твого робочого main.py (тільки 5 суглобів які контролер знає)
         self.positions = [
-            [0.5, 0.2, 0.2, 0.0],   # Куб 1 (Червоний)
-            [0.0, 0.4, 0.1, 0.0],   # Куб 2 (Зелений)
-            [-0.5, 0.2, 0.2, 0.0],  # Куб 3 (Синій)
-            [0.0, 0.0, 0.0, 0.0]    # Повернення в домашню позицію
+            [0.0000, 1.2973, 1.2973, 0.1382, -1.2973, -1.4355, 1.4355, 0.0],
+            [1.5508, 1.2935, 1.2935, 0.4416, -1.2935, -1.7350, 1.7350, 0.0],
+            [-2.3457, 1.3683, 1.3683, -0.1824, -1.3683, -1.1860, 1.1860, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
         ]
 
     def timer_callback(self):
         if self.step >= len(self.positions):
-            self.get_logger().info('Всі куби пройдено! Завершую роботу.')
+            self.get_logger().info('Всі куби пройдено!')
             self.timer.cancel()
             return
 
         msg = JointTrajectory()
-        # Назви суглобів для MG400
-        msg.joint_names = ['joint1', 'joint2', 'joint3', 'joint4']
-        
+        msg.header = Header()
+        msg.header.frame_id = ''
+        msg.header.stamp.sec = 0
+        msg.header.stamp.nanosec = 0
+        msg.joint_names = ['mg400_j1', 'mg400_j2_1', 'mg400_j2_2', 'mg400_j3_1', 'mg400_j3_2', 'mg400_j4_1', 'mg400_j4_2', 'mg400_j5']
+
         point = JointTrajectoryPoint()
         point.positions = self.positions[self.step]
-        point.time_from_start = Duration(sec=3, nanosec=0) # Рух триватиме 3 секунди
-        
+        point.velocities = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        point.time_from_start = Duration(sec=4, nanosec=0)
+
         msg.points = [point]
         self.publisher_.publish(msg)
-        
         self.get_logger().info(f'Рухаюсь до позиції {self.step + 1}...')
         self.step += 1
 
