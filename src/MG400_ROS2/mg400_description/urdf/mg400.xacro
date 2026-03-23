@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <!-- constants -->
   <xacro:include
       filename="$(find mg400_description)/urdf/common/constants.xacro"
       ns="const" />
 
-  <!-- Base path for meshes -->
   <xacro:property name="BASE_PATH" value="mg400_description/meshes" />
   <xacro:property name="MESH_BASE_LINK" value="${BASE_PATH}/base_link.dae" />
   <xacro:property name="MESH_LINK_1" value="${BASE_PATH}/link1.dae" />
@@ -25,7 +23,6 @@
       <color rgba="0.2 0.0 0.0 0.5" />
     </material>
 
-    <!-- links -->
     <link name="${prefix}mg400_base_link">
       <inertial>
         <origin xyz="0.000600637001378879 -2.53487071137343E-07 0.0560927888040551" rpy="0 0 0" />
@@ -66,7 +63,7 @@
       <inertial>
         <origin xyz="-0.00321788524756698 0.0352926570826593 0.0596131328734945" rpy="0 0 0" />
         <mass value="0.0866115884541459" />
-        <inertia ixx="0.000338551627157209" ixy="-2.78858228577314E-09" ixz="1.05212346076681E-05"
+        <inertia ixx="0.000338551627157209" ixy="-2.78858228577314E-09" ixz="0.15212346076681E-05"
                  iyy="0.000307789653713489" iyz="-1.36109590152488E-06" izz="3.89949940178023E-05" />
       </inertial>
       <visual>
@@ -169,7 +166,7 @@
         <origin xyz="${3.174 * const.SCALE_MM} 0.0 ${-28.198 * const.SCALE_MM}" rpy="0 0 0" />
         <mass value="0.01907" />
         <inertia ixx="3.28164E-05" ixy="3.15E-10" ixz="2.42378E-06"
-                 iyy="3.17191E-05" iyz="-1.27E-10" izz="1.08143E-05" />
+                 iyy="3.17191E-05" iyz="-1.27E-10" izz="0.18143E-05" />
       </inertial>
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0" />
@@ -225,7 +222,6 @@
       </link>
     </xacro:if>
 
-    <!-- joints -->
     <joint name="${prefix}mg400_base_joint" type="fixed">
       <parent link="${parent}" />
       <child link="${prefix}mg400_base_link" />
@@ -252,7 +248,7 @@
       <child link="${prefix}mg400_link1" />
       <axis xyz="0 0 1" />
       <limit lower="${-180.0 * const.TO_RADIAN}" upper="${180.0 * const.TO_RADIAN}" effort="10000.0" velocity="5.0" />
-      <dynamics damping="50.0" friction="1.0"/>
+      <dynamics damping="0.5" friction="0.1"/>
     </joint>
 
     <joint name="${prefix}mg400_j2_1" type="revolute">
@@ -261,7 +257,7 @@
       <child link="${prefix}mg400_link2_1" />
       <axis xyz="0 1 0" />
       <limit lower="-3.14" upper="3.14" effort="10000.0" velocity="5.0" />
-      <dynamics damping="50.0" friction="1.0"/>
+      <dynamics damping="0.5" friction="0.1"/>
     </joint>
 
     <joint name="${prefix}mg400_j2_2" type="revolute">
@@ -270,7 +266,8 @@
       <child link="${prefix}mg400_link2_2" />
       <axis xyz="0 1 0" />
       <limit lower="-3.14" upper="3.14" effort="10000.0" velocity="5.0" />
-      <dynamics damping="50.0" friction="1.0"/>
+      <dynamics damping="0.5" friction="0.1"/>
+      <mimic joint="${prefix}mg400_j2_1" multiplier="1" offset="0"/>
     </joint>
 
     <joint name="${prefix}mg400_j3_1" type="revolute">
@@ -279,7 +276,7 @@
       <child link="${prefix}mg400_link3_1" />
       <axis xyz="0 1 0" />
       <limit lower="-3.14" upper="3.14" effort="10000.0" velocity="5.0" />
-      <dynamics damping="50.0" friction="1.0"/>
+      <dynamics damping="0.5" friction="0.1"/>
     </joint>
 
     <joint name="${prefix}mg400_j3_2" type="revolute">
@@ -288,7 +285,8 @@
       <child link="${prefix}mg400_link3_2" />
       <axis xyz="0 1 0" />
       <limit lower="-3.14" upper="3.14" effort="10000.0" velocity="5.0" />
-      <dynamics damping="50.0" friction="1.0"/>
+      <dynamics damping="0.5" friction="0.1"/>
+      <mimic joint="${prefix}mg400_j3_1" multiplier="1" offset="0"/>
     </joint>
 
     <joint name="${prefix}mg400_j4_1" type="revolute">
@@ -297,7 +295,7 @@
       <child link="${prefix}mg400_link4_1" />
       <axis xyz="0 1 0" />
       <limit lower="-3.14" upper="3.14" effort="10000.0" velocity="5.0" />
-      <dynamics damping="50.0" friction="1.0"/>
+      <dynamics damping="0.5" friction="0.1"/>
     </joint>
 
     <joint name="${prefix}mg400_j4_2" type="revolute">
@@ -306,7 +304,8 @@
       <child link="${prefix}mg400_link4_2" />
       <axis xyz="0 1 0" />
       <limit lower="-3.14" upper="3.14" effort="10000.0" velocity="5.0" />
-      <dynamics damping="50.0" friction="1.0"/>
+      <dynamics damping="0.5" friction="0.1"/>
+      <mimic joint="${prefix}mg400_j4_1" multiplier="1" offset="0"/>
     </joint>
 
     <joint name="${prefix}mg400_j4_3" type="fixed">
@@ -327,7 +326,7 @@
       <child link="${prefix}mg400_end_effector_flange" />
       <axis xyz="0 0 1" />
       <limit lower="${-180.0 * const.TO_RADIAN}" upper="${180.0 * const.TO_RADIAN}" effort="10000.0" velocity="5.0" />
-      <dynamics damping="50.0" friction="1.0"/>
+      <dynamics damping="0.5" friction="0.1"/>
     </joint>
 
   </xacro:macro>

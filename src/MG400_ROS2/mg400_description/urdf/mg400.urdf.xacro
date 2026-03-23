@@ -63,32 +63,41 @@
             <state_interface name="position"/>
             <state_interface name="velocity"/>
         </joint>
-        <joint name="mg400_j2_2">
-            <command_interface name="position"/>
-            <state_interface name="position"/>
-            <state_interface name="velocity"/>
-        </joint>
+        
         <joint name="mg400_j3_1">
             <command_interface name="position"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>
         </joint>
-        <joint name="mg400_j3_2">
-            <command_interface name="position"/>
-            <state_interface name="position"/>
-            <state_interface name="velocity"/>
-        </joint>
+        
         <joint name="mg400_j4_1">
             <command_interface name="position"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>
         </joint>
-        <joint name="mg400_j4_2">
+        
+        <joint name="mg400_j5">
             <command_interface name="position"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>
         </joint>
-        <joint name="mg400_j5">
+        <joint name="mg400_j2_2">
+            <param name="mimic">mg400_j2_1</param>
+            <param name="multiplier">1</param>
+            <command_interface name="position"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+        <joint name="mg400_j3_2">
+            <param name="mimic">mg400_j3_1</param>
+            <param name="multiplier">1</param>
+            <command_interface name="position"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+        <joint name="mg400_j4_2">
+            <param name="mimic">mg400_j4_1</param>
+            <param name="multiplier">1</param>
             <command_interface name="position"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>
