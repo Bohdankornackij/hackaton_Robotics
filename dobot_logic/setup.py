@@ -22,9 +22,11 @@ setup(
             'pytest',
         ],
     },
-   entry_points={
+    entry_points={
         'console_scripts': [
             'main = dobot_logic.main:main',
+            'task_a = dobot_logic.task_a:main',
+            'vision_task = dobot_logic.vision_task:main',
         ],
     },
 )
